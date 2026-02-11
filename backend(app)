@@ -1,0 +1,32 @@
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+def detect_phishing(url):
+    risk_score = 0
+    
+    if "@" in url:
+        risk_score += 30
+    if "-" in url:
+        risk_score += 20
+    if "http://" in url:
+        risk_score += 20
+    if len(url) > 75:
+        risk_score += 30
+
+    if risk_score >= 50:
+        return "Phishing Website Detected ⚠", risk_score
+    else:
+        return "Legitimate Website ✅", risk_score
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    result = ""
+    score = ""
+    if request.method == "POST":
+        url = request.form["url"]
+        result, score = detect_phishing(url)
+    return render_template("index.html", result=result, score=score)
+
+if __name__ == "__main__":
+    app.run(debug=True)
